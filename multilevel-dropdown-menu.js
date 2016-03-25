@@ -18,12 +18,14 @@
   var privateVar = null;
 
   var dropdownSubMenu = function(subMenu) {
+    console.log('down');
     subMenu.stop(true, false);
     subMenu.animate({
       'margin-top': 0
     }, 'fast');
   }
   var upAndHideSubMenu = function(subMenu) {
+    console.log('up');
     // the subMenu of this 'li' is slide up and disapear
     subMenu.stop(true, false);
     subMenu.animate({
