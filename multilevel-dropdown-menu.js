@@ -15,66 +15,78 @@
   'use strict';
 
   var pluginName = 'multilevelDropdownMenu';
-  var privateVar = null;
+
+  var FIRST_SUB_MENU = 'first-sub-menu';
+  var PARENT_MENU = 'parent';
+  var CHILD_SUBMENU = 'child';
+  var MULTI_DROPDOWN_MENU_ITEM = 'multilevel-dropdown-menu-item';
+
+  var duration = 2000;
 
   var dropdownSubMenu = function(subMenu) {
-    console.log('down');
     subMenu.stop(true, false);
     subMenu.animate({
       'margin-top': 0
-    }, 'fast');
+    }, duration);
   }
   var upAndHideSubMenu = function(subMenu) {
-    console.log('up');
     // the subMenu of this 'li' is slide up and disapear
     subMenu.stop(true, false);
     subMenu.animate({
       'margin-top': subMenu.outerHeight()*-1
-    }, 'fast');
+    }, duration);
   }
 
   var slideLeftSubMenu = function(subMenu) {
     subMenu.stop(true, false);
     subMenu.animate({
       'margin-left': subMenu.outerWidth()*-1
-    }, 'fast');
+    }, duration);
   }
 
   var slideRightSubMenu = function(subMenu) {
     subMenu.stop(true, false);
     subMenu.animate({
       'margin-left': 0
-    }, 'fast');
+    }, duration);
   }
 
-  var separateAndWrapULChild = function(liElement, firstSubmenu) {
-
-    if (liElement.children().length === 0) return;
-
-
-    var subMenuWrapper = $('<div></div>').clone();
+  /*
+  * Wrap submenu <ul></ul> inside given <li></li> up into a <div></div>
+  * and split.
+  */
+  var wrapSubMenuUpAndSplitThem = function(mainMenu, liElement, isFirstSubmenu) {
     var subMenu = liElement.find('ul:first');
-    subMenuWrapper.append(subMenu);
-    subMenuWrapper.appendTo($(document.body));
+    var subMenuWrapper = $('<div></div>').clone()
+                                          .append(subMenu)
+                                          .appendTo(mainMenu)
+                                          .data(PARENT_MENU, liElement)
+                                          .addClass(CHILD_SUBMENU);
 
-    
+    if (isFirstSubmenu) {
+      subMenuWrapper.addClass(FIRST_SUB_MENU);
+    }
 
-    if (firstSubmenu) {
-      var top = parseInt(liElement.offset().top) + parseInt(liElement.css('height')) + 'px';
-      // position sub-menu-wrapper in bottom of liElement.
-      // this is also where the subMenu is placed when showing.
-      subMenuWrapper.css({
-        position: 'absolute',
-        overflow: 'hidden',
-        top: top
-      });
+    liElement.data(CHILD_SUBMENU, subMenuWrapper)
+             .addClass(PARENT_MENU);
 
-      // hide the subMenu
-      subMenu.css({
-        'margin-top': subMenu.height()*-1
-      });
+    // Continue doing this for each 'li' inside submenu
+    subMenu.children().each(function() {
+      if (hasAtLeastOneSubMenuInside($(this))) {
+        wrapSubMenuUpAndSplitThem(mainMenu, $(this), false);
+      }
+    });
+  }
 
+  var hasAtLeastOneSubMenuInside = function(liElement) {
+    return liElement.find('ul:first').length > 0;
+  }
 
+  var setUpMovement = function(subMenuWrapper) {
+    var liElement = subMenuWrapper.data(PARENT_MENU);
+    var subMenu = subMenuWrapper.children();
+
+    if (subMenuWrapper.hasClass(FIRST_SUB_MENU)) {
       liElement.add(subMenu).hover(function() {
         dropdownSubMenu(subMenu);
       }, 
@@ -83,40 +95,53 @@
       });
     }
     else {
-      // console.log(liElement.parent().height());
-      // subMenuWrapper.css({
-      //   position: 'absolute',
-      //   overlow: 'hidden',
-      //   top: liElement.offset().top + liElement.parent().height(),
-      //   left: liElement.offset().left + liElement.width()
-      // });
+      liElement.add(subMenu).hover(function() {
+        slideRightSubMenu(subMenu);
+      }, 
+      function() {
+        slideLeftSubMenu(subMenu);
+      });
     }
-
-    
-
-    // Continue wrap the ul inside this liElement
-    separateAndWrapULChild(subMenu.children().eq(0), false);
-    
   }
 
-  var testAlgorithm = function(liElement, firstSubmenu) {
-    var subMenuWrapper = $('<div></div>').clone();
-    var subMenu = liElement.find('ul:first');
-    subMenuWrapper.append(subMenu);
-    subMenuWrapper.appendTo($(document.body));
+  var setUpMovement2 = function(mainMenu) {
 
-    if (firstSubmenu) {
-      subMenuWrapper.addClass('first-sub-menu');
-    }
-
-    liElement.data('child', subMenuWrapper).addClass('parent');
-    subMenuWrapper.data('parent', liElement).addClass('child');
-
-    subMenu.children().each(function() {
-      var ul = $(this).find('ul:first');
-      if (ul.length > 0) {
-        testAlgorithm($(this), false);
+    mainMenu.delegate('.' + MULTI_DROPDOWN_MENU_ITEM, 'mouseenter', function() {
+      var currentEnteredElement = $(this);
+      var prevEnteredElement = mainMenu.data('current-selected-item');  
+      if (prevEnteredElement == null) {
+        mainMenu.data('current-selected-item', $(this));
+        prevEnteredElement = currentEnteredElement;
       }
+
+      var parentOfCurrent = currentEnteredElement.parent().parent().data(PARENT_MENU);
+      if (parentOfCurrent == null) {
+        if (currentEnteredElement.data(CHILD_SUBMENU) != null)
+          dropdownSubMenu(currentEnteredElement.data(CHILD_SUBMENU).children());
+
+        mainMenu.data('current-selected-item', currentEnteredElement);
+      }
+      else {
+        if (parentOfCurrent.is(prevEnteredElement)) {
+          if (currentEnteredElement.data(CHILD_SUBMENU) != null)
+            slideRightSubMenu(currentEnteredElement.data(CHILD_SUBMENU).children());
+
+          mainMenu.data('current-selected-item', currentEnteredElement);
+        }
+        else if (currentEnteredElement.parent().is(prevEnteredElement.parent()))) {
+
+        }
+        else {
+          // console.log(prevEnteredElement);
+          // console.log(currentEnteredElement);
+          if (prevEnteredElement.data(CHILD_SUBMENU) != null)
+            slideLeftSubMenu(prevEnteredElement.data(CHILD_SUBMENU).children());
+
+          mainMenu.data('current-selected-item', currentEnteredElement);
+        }
+      }
+
+      
     });
   }
 
@@ -130,15 +155,22 @@
     init: function() {
       var that = this;
 
-      that.hugeMenu = that.element;
+      that.mainMenu = that.element;
 
-      var firstSubmenu = true;
-      testAlgorithm(that.hugeMenu.children().eq(0), firstSubmenu);
+      var isFirstSubmenu = true;
+
+      //TODO refactor to apply this line of code in case there're many menus
+      wrapSubMenuUpAndSplitThem(that.mainMenu, that.mainMenu.children().eq(0), isFirstSubmenu);
 
       $('.child').each(function() {
-        var liElement = $(this).data('parent');
+        var liElement = $(this).data(PARENT_MENU);
+        var subMenu = $(this).children();
+        subMenu.css({
+            margin: 0,
+            padding: 0
+        });
 
-        if ($(this).hasClass('first-sub-menu')) {
+        if ($(this).hasClass(FIRST_SUB_MENU)) {
           var top = parseInt(liElement.offset().top) + parseInt(liElement.css('height')) + 'px';
           $(this).css({
             position: 'absolute',
@@ -147,17 +179,7 @@
             left: liElement.offset().left
           });
 
-          var subMenu = $(this).children();
 
-          subMenu.css('margin', 0);
-          subMenu.css('padding', 0);
-
-          liElement.add(subMenu).hover(function() {
-            dropdownSubMenu(subMenu);
-          }, 
-          function() {
-            upAndHideSubMenu(subMenu);
-          });
         }
         else {
           $(this).css({
@@ -166,31 +188,27 @@
             left: parseInt(liElement.offset().left) + parseInt(liElement.outerWidth()),
             overflow: 'hidden'
           });
-
-          var subMenu = $(this).children();
-          subMenu.css('margin', 0);
-          subMenu.css('padding', 0);
-
-          liElement.add(subMenu).hover(function() {
-            slideRightSubMenu(subMenu);
-          }, 
-          function() {
-            slideLeftSubMenu(subMenu);
-          });
-
         }
-
+        //setUpMovement($(this));
         
       });
 
-
-      // var height = $('.first-sub-menu').children().outerHeight();
-      // $('.first-sub-menu').children().css({
-      //   'margin-top': height*-1
-      // });
+      that.mainMenu.find('li').addClass(MULTI_DROPDOWN_MENU_ITEM);
+      setUpMovement2(that.mainMenu);
 
 
       
+      var height = $('.' + FIRST_SUB_MENU).children().outerHeight();
+      $('.' + FIRST_SUB_MENU).children().css({
+        'margin-top': height*-1
+      });
+
+      $('.' + CHILD_SUBMENU + ':not(.' + FIRST_SUB_MENU + ')').children().each(function() {
+        var width = $(this).outerWidth();
+        $(this).css({
+          'margin-left': width*-1
+        });
+      });
     },
    
     destroy: function() {
