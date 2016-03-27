@@ -24,6 +24,7 @@
   var duration = 2000;
 
   var dropdownSubMenu = function(subMenu) {
+    subMenu.addClass('showing');
     subMenu.stop(true, false);
     subMenu.animate({
       'margin-top': 0
@@ -31,6 +32,7 @@
   }
   var upAndHideSubMenu = function(subMenu) {
     // the subMenu of this 'li' is slide up and disapear
+    subMenu.removeClass('showing');
     subMenu.stop(true, false);
     subMenu.animate({
       'margin-top': subMenu.outerHeight()*-1
@@ -38,6 +40,7 @@
   }
 
   var slideLeftSubMenu = function(subMenu) {
+    subMenu.removeClass('showing');
     subMenu.stop(true, false);
     subMenu.animate({
       'margin-left': subMenu.outerWidth()*-1
@@ -45,6 +48,7 @@
   }
 
   var slideRightSubMenu = function(subMenu) {
+    subMenu.addClass('showing');
     subMenu.stop(true, false);
     subMenu.animate({
       'margin-left': 0
@@ -71,7 +75,9 @@
              .addClass(PARENT_MENU);
 
     // Continue doing this for each 'li' inside submenu
+    var level = liElement.data('level');
     subMenu.children().each(function() {
+      $(this).data('level', level+1);
       if (hasAtLeastOneSubMenuInside($(this))) {
         wrapSubMenuUpAndSplitThem(mainMenu, $(this), false);
       }
@@ -108,40 +114,91 @@
 
     mainMenu.delegate('.' + MULTI_DROPDOWN_MENU_ITEM, 'mouseenter', function() {
       var currentEnteredElement = $(this);
-      var prevEnteredElement = mainMenu.data('current-selected-item');  
+      var prevEnteredElement = mainMenu.data('current-selected-item');
       if (prevEnteredElement == null) {
         mainMenu.data('current-selected-item', $(this));
         prevEnteredElement = currentEnteredElement;
       }
 
-      var parentOfCurrent = currentEnteredElement.parent().parent().data(PARENT_MENU);
-      if (parentOfCurrent == null) {
-        if (currentEnteredElement.data(CHILD_SUBMENU) != null)
+
+      if (!currentEnteredElement.parent().hasClass('showing')) {
+        slideRightSubMenu(currentEnteredElement.parent());
+      }
+
+      if (currentEnteredElement.data(CHILD_SUBMENU) != null) {
+        currentEnteredElement.addClass('active');
+        if (currentEnteredElement.data(CHILD_SUBMENU).hasClass(FIRST_SUB_MENU)) {
           dropdownSubMenu(currentEnteredElement.data(CHILD_SUBMENU).children());
+          return;
+        }
+        else {
+          slideRightSubMenu(currentEnteredElement.data(CHILD_SUBMENU).children());
+        }
 
         mainMenu.data('current-selected-item', currentEnteredElement);
       }
+
+      var parentOfCurrent = currentEnteredElement.parent().parent().data(PARENT_MENU);
+      if (parentOfCurrent.is(prevEnteredElement)) {
+
+      }
       else {
-        if (parentOfCurrent.is(prevEnteredElement)) {
-          if (currentEnteredElement.data(CHILD_SUBMENU) != null)
-            slideRightSubMenu(currentEnteredElement.data(CHILD_SUBMENU).children());
+        // Close submenu of all the 'active' li has level higher than the current one.
+        $('.' + MULTI_DROPDOWN_MENU_ITEM).filter('.active').filter(function() {
+          return $(this).data('level') >= currentEnteredElement.data('level') && !$(this).is(currentEnteredElement);
+        })
+        .each(function() {
+          // Close the submenu of this <li> element and then remove class 'active' out of it
+          if ($(this).data(CHILD_SUBMENU) != null)
+            slideLeftSubMenu($(this).data(CHILD_SUBMENU).children());
 
-          mainMenu.data('current-selected-item', currentEnteredElement);
-        }
-        else if (currentEnteredElement.parent().is(prevEnteredElement.parent()))) {
-
-        }
-        else {
-          // console.log(prevEnteredElement);
-          // console.log(currentEnteredElement);
-          if (prevEnteredElement.data(CHILD_SUBMENU) != null)
-            slideLeftSubMenu(prevEnteredElement.data(CHILD_SUBMENU).children());
-
-          mainMenu.data('current-selected-item', currentEnteredElement);
-        }
+          $(this).removeClass('active');
+        });
       }
 
+      return false;
+        
+
+      // var parentOfCurrent = currentEnteredElement.parent().parent().data(PARENT_MENU);
+      // if (parentOfCurrent == null) {
+      //   if (currentEnteredElement.data(CHILD_SUBMENU) != null)
+      //     dropdownSubMenu(currentEnteredElement.data(CHILD_SUBMENU).children());
+
+      //   mainMenu.data('current-selected-item', currentEnteredElement);
+      // }
+      // else {
+      //   if (parentOfCurrent.is(prevEnteredElement)) {
+      //     if (currentEnteredElement.data(CHILD_SUBMENU) != null)
+      //       slideRightSubMenu(currentEnteredElement.data(CHILD_SUBMENU).children());
+
+      //     mainMenu.data('current-selected-item', currentEnteredElement);
+      //   }
+      //   // else if (currentEnteredElement.parent().is(prevEnteredElement.parent())) {
+
+      //   // }
+      //   else {
+      //     // console.log(prevEnteredElement);
+      //     // console.log(currentEnteredElement);
+      //   //   if (prevEnteredElement.data(CHILD_SUBMENU) != null)
+      //   //     slideLeftSubMenu(prevEnteredElement.data(CHILD_SUBMENU).children());
+
+      //   //   mainMenu.data('current-selected-item', currentEnteredElement);
+      //   // }
+
+          
+
+      //     // while (!prevEnteredElement.is(currentEnteredElement) && !parentOfCurrent.is(prevEnteredElement)) {
+      //     //   if (prevEnteredElement.data(CHILD_SUBMENU) != null) {
+      //     //     slideLeftSubMenu(prevEnteredElement.data(CHILD_SUBMENU).children());
+      //     //   }
+
+      //     //   prevEnteredElement = prevEnteredElement.parent().parent().data(PARENT_MENU);
+      //     // }
+
+      //   }
+
       
+      //};
     });
   }
 
@@ -160,6 +217,7 @@
       var isFirstSubmenu = true;
 
       //TODO refactor to apply this line of code in case there're many menus
+      that.mainMenu.children().eq(0).data('level', 0);
       wrapSubMenuUpAndSplitThem(that.mainMenu, that.mainMenu.children().eq(0), isFirstSubmenu);
 
       $('.child').each(function() {
@@ -209,6 +267,23 @@
           'margin-left': width*-1
         });
       });
+
+
+      $('#menu').on('mouseleave', function() {
+        $('.' + MULTI_DROPDOWN_MENU_ITEM).filter('.active').each(function() {
+          if ($(this).data(CHILD_SUBMENU).hasClass(FIRST_SUB_MENU)) {
+            console.log("UP");
+            upAndHideSubMenu($(this).data(CHILD_SUBMENU).children());
+          }
+          else {
+            slideLeftSubMenu($(this).data(CHILD_SUBMENU).children());
+          }
+
+          
+        });
+      });
+
+
     },
    
     destroy: function() {
