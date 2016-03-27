@@ -21,7 +21,7 @@
   var CHILD_SUBMENU = 'child';
   var MULTI_DROPDOWN_MENU_ITEM = 'multilevel-dropdown-menu-item';
 
-  var duration = 2000;
+  var duration = 'fast';
 
   var dropdownSubMenu = function(subMenu) {
     subMenu.addClass('showing');
@@ -69,6 +69,19 @@
 
     if (isFirstSubmenu) {
       subMenuWrapper.addClass(FIRST_SUB_MENU);
+      liElement.on('mouseleave', function() {
+        $('.' + MULTI_DROPDOWN_MENU_ITEM).filter('.active').filter(function() {
+          return $(this).data('level') > 0;
+        })
+        .each(function() {
+          // Close the submenu of this <li> element and then remove class 'active' out of it
+          if ($(this).data(CHILD_SUBMENU) != null) {
+            $(this).removeClass('active');
+            slideLeftSubMenu($(this).data(CHILD_SUBMENU).children());
+          }
+        });
+        upAndHideSubMenu(subMenu);
+      });
     }
 
     liElement.data(CHILD_SUBMENU, subMenuWrapper)
@@ -88,31 +101,10 @@
     return liElement.find('ul:first').length > 0;
   }
 
-  var setUpMovement = function(subMenuWrapper) {
-    var liElement = subMenuWrapper.data(PARENT_MENU);
-    var subMenu = subMenuWrapper.children();
-
-    if (subMenuWrapper.hasClass(FIRST_SUB_MENU)) {
-      liElement.add(subMenu).hover(function() {
-        dropdownSubMenu(subMenu);
-      }, 
-      function() {
-        upAndHideSubMenu(subMenu);
-      });
-    }
-    else {
-      liElement.add(subMenu).hover(function() {
-        slideRightSubMenu(subMenu);
-      }, 
-      function() {
-        slideLeftSubMenu(subMenu);
-      });
-    }
-  }
-
   var setUpMovement2 = function(mainMenu) {
 
     mainMenu.delegate('.' + MULTI_DROPDOWN_MENU_ITEM, 'mouseenter', function() {
+
       var currentEnteredElement = $(this);
       var prevEnteredElement = mainMenu.data('current-selected-item');
       if (prevEnteredElement == null) {
@@ -121,7 +113,8 @@
       }
 
 
-      if (!currentEnteredElement.parent().hasClass('showing')) {
+      if (!currentEnteredElement.parent().hasClass('showing') && currentEnteredElement.data('level') > 0) {
+        currentEnteredElement.parent().parent().data(PARENT_MENU).addClass('active');
         slideRightSubMenu(currentEnteredElement.parent());
       }
 
@@ -140,7 +133,7 @@
 
       var parentOfCurrent = currentEnteredElement.parent().parent().data(PARENT_MENU);
       if (parentOfCurrent.is(prevEnteredElement)) {
-
+        mainMenu.data('current-selected-item', currentEnteredElement);
       }
       else {
         // Close submenu of all the 'active' li has level higher than the current one.
@@ -149,56 +142,12 @@
         })
         .each(function() {
           // Close the submenu of this <li> element and then remove class 'active' out of it
-          if ($(this).data(CHILD_SUBMENU) != null)
+          if ($(this).data(CHILD_SUBMENU) != null) {
+            $(this).removeClass('active');
             slideLeftSubMenu($(this).data(CHILD_SUBMENU).children());
-
-          $(this).removeClass('active');
+          }
         });
       }
-
-      return false;
-        
-
-      // var parentOfCurrent = currentEnteredElement.parent().parent().data(PARENT_MENU);
-      // if (parentOfCurrent == null) {
-      //   if (currentEnteredElement.data(CHILD_SUBMENU) != null)
-      //     dropdownSubMenu(currentEnteredElement.data(CHILD_SUBMENU).children());
-
-      //   mainMenu.data('current-selected-item', currentEnteredElement);
-      // }
-      // else {
-      //   if (parentOfCurrent.is(prevEnteredElement)) {
-      //     if (currentEnteredElement.data(CHILD_SUBMENU) != null)
-      //       slideRightSubMenu(currentEnteredElement.data(CHILD_SUBMENU).children());
-
-      //     mainMenu.data('current-selected-item', currentEnteredElement);
-      //   }
-      //   // else if (currentEnteredElement.parent().is(prevEnteredElement.parent())) {
-
-      //   // }
-      //   else {
-      //     // console.log(prevEnteredElement);
-      //     // console.log(currentEnteredElement);
-      //   //   if (prevEnteredElement.data(CHILD_SUBMENU) != null)
-      //   //     slideLeftSubMenu(prevEnteredElement.data(CHILD_SUBMENU).children());
-
-      //   //   mainMenu.data('current-selected-item', currentEnteredElement);
-      //   // }
-
-          
-
-      //     // while (!prevEnteredElement.is(currentEnteredElement) && !parentOfCurrent.is(prevEnteredElement)) {
-      //     //   if (prevEnteredElement.data(CHILD_SUBMENU) != null) {
-      //     //     slideLeftSubMenu(prevEnteredElement.data(CHILD_SUBMENU).children());
-      //     //   }
-
-      //     //   prevEnteredElement = prevEnteredElement.parent().parent().data(PARENT_MENU);
-      //     // }
-
-      //   }
-
-      
-      //};
     });
   }
 
@@ -223,10 +172,10 @@
       $('.child').each(function() {
         var liElement = $(this).data(PARENT_MENU);
         var subMenu = $(this).children();
-        subMenu.css({
-            margin: 0,
-            padding: 0
-        });
+        // subMenu.css({
+        //     margin: 0,
+        //     padding: 0
+        // });
 
         if ($(this).hasClass(FIRST_SUB_MENU)) {
           var top = parseInt(liElement.offset().top) + parseInt(liElement.css('height')) + 'px';
@@ -268,20 +217,28 @@
         });
       });
 
+      // $('#menu').on('mouseleave', function() {
 
-      $('#menu').on('mouseleave', function() {
-        $('.' + MULTI_DROPDOWN_MENU_ITEM).filter('.active').each(function() {
-          if ($(this).data(CHILD_SUBMENU).hasClass(FIRST_SUB_MENU)) {
-            console.log("UP");
-            upAndHideSubMenu($(this).data(CHILD_SUBMENU).children());
-          }
-          else {
-            slideLeftSubMenu($(this).data(CHILD_SUBMENU).children());
-          }
+      //   $(this).data('isClosingAll', true);
 
-          
-        });
-      });
+      //   setTimeout(
+      //       function() {
+      //         if ($(this).data('isClosingAll') == false) return;
+
+      //         $('.' + MULTI_DROPDOWN_MENU_ITEM).filter('.active').each(function() {
+      //           if ($(this).data(CHILD_SUBMENU).hasClass(FIRST_SUB_MENU)) {
+      //             console.log("UP");
+      //             upAndHideSubMenu($(this).data(CHILD_SUBMENU).children());
+      //           }
+      //           else {
+      //             slideLeftSubMenu($(this).data(CHILD_SUBMENU).children());
+      //           }
+                
+      //         });
+      //       }, 2000);
+
+        
+      // });
 
 
     },

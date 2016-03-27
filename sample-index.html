@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="sample-style.css">
+</head>
+<style>
+#menu {
+    width: 50px;
+  }
+  
+</style>
+<body>
+
+  <ul id="menu">
+    <li>Home</li>
+    <li>About</li>
+    <li>
+      Portfolio
+      <!-- <ul>
+        <li>Web Design</li>
+        <li>Web Development</li>
+        <li>Illustrations</li>
+      </ul> -->
+    </li>
+    <li>Blog</li>
+    <li>Contact</li>
+</ul>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+  <script src="multilevel-dropdown-menu.js"></script>
+  <script>
+    $('#menu').multilevelDropdownMenu();
+  </script>
+</body>
+</html>
