@@ -22,9 +22,8 @@
   var CHILD_SUBMENU = 'child';
   var MULTI_DROPDOWN_MENU_ITEM = 'multilevel-dropdown-menu-item';
 
-  var duration = '700';
 
-  var dropdownSubMenu = function(subMenu) {
+  var dropdownSubMenu = function(subMenu, duration) {
     subMenu.addClass('showing');
     subMenu.css('display', 'block');
     subMenu.stop(true, false);
@@ -32,7 +31,7 @@
       'margin-top': 0
     }, duration);
   }
-  var upAndHideSubMenu = function(subMenu) {
+  var upAndHideSubMenu = function(subMenu, duration) {
     // the subMenu of this 'li' is slide up and disapear
     subMenu.removeClass('showing');
 
@@ -44,7 +43,7 @@
     });
   }
 
-  var slideLeftSubMenu = function(subMenu) {
+  var slideLeftSubMenu = function(subMenu, duration) {
     subMenu.removeClass('showing');
     
     subMenu.stop(true, false);
@@ -55,7 +54,7 @@
     });
   }
 
-  var slideRightSubMenu = function(subMenu) {
+  var slideRightSubMenu = function(subMenu, duration) {
     subMenu.addClass('showing');
     subMenu.css('display', 'block');
     subMenu.stop(true, false);
@@ -97,7 +96,7 @@
     return liElement.find('ul:first').length > 0;
   }
 
-  var setUpMovement = function(mainMenu) {
+  var setUpMovement = function(mainMenu, options) {
 
     mainMenu.find('li').addClass(MULTI_DROPDOWN_MENU_ITEM);
 
@@ -107,10 +106,6 @@
       var parentSubMenu = currentEnteredElement.parent();
       var subMenuWrapper = parentSubMenu.parent();
 
-      // Allow only one main-submenu-item is active
-      // if (parentSubMenu.is(mainMenu)) {
-      //   closeChildSubMenusOfMenuItem(currentEnteredElement);
-      // }
 
       var prevEnteredElement = mainMenu.data('current-selected-item');
       mainMenu.data('current-selected-item', currentEnteredElement);
@@ -121,30 +116,30 @@
 
       if (!parentSubMenu.hasClass('showing') && currentEnteredElement.data('level') > 0) {
         //TODO refactor subMenuWrapper.data(PARENT_MENU). Need to differentiate the parentSubMenu and childSubMenu
-        showOrCloseSubMenu(subMenuWrapper.data(PARENT_MENU), true);
+        showOrCloseSubMenu(subMenuWrapper.data(PARENT_MENU), true, options);
         // show up all parents of this element
         var traverseVar = subMenuWrapper.data(PARENT_MENU)
                                         .parent().parent().data(PARENT_MENU);
         while (traverseVar != null) {
-          showOrCloseSubMenu(traverseVar, true);
+          showOrCloseSubMenu(traverseVar, true, options);
           traverseVar = traverseVar.parent().parent().data(PARENT_MENU);
         }
       }
 
       var parentOfCurrent = subMenuWrapper.data(PARENT_MENU);
       if (parentOfCurrent == null) {
-         closeChildSubMenusOfMenuItem(currentEnteredElement);
+         closeChildSubMenusOfMenuItem(currentEnteredElement, options);
       }
       else {
          if (!parentOfCurrent.is(prevEnteredElement)) {
            if (currentEnteredElement.data('level') === prevEnteredElement.data('level')
                   && !currentEnteredElement.parent().is(prevEnteredElement.parent())) {
-            closeChildSubMenusOfMenuItem(currentEnteredElement.parent().parent().data(PARENT_MENU));
+            closeChildSubMenusOfMenuItem(currentEnteredElement.parent().parent().data(PARENT_MENU), options);
            //showOrCloseSubMenu(prevEnteredElement.parent().parent().data(PARENT_MENU), false);
             
            }
            else {
-            closeChildSubMenusOfMenuItem(currentEnteredElement);
+            closeChildSubMenusOfMenuItem(currentEnteredElement, options);
            }
            
          }
@@ -153,13 +148,12 @@
       if (currentEnteredElement.data(CHILD_SUBMENU) != null) {
         currentEnteredElement.addClass('active');
         if (currentEnteredElement.data(CHILD_SUBMENU).hasClass(FIRST_SUB_MENU)) {
-          dropdownSubMenu(currentEnteredElement.data(CHILD_SUBMENU).children());
+          dropdownSubMenu(currentEnteredElement.data(CHILD_SUBMENU).children(), options.duration);
         }
         else {
-          slideRightSubMenu(currentEnteredElement.data(CHILD_SUBMENU).children());
+          slideRightSubMenu(currentEnteredElement.data(CHILD_SUBMENU).children(), options.duration);
         }
 
-        //mainMenu.data('current-selected-item', currentEnteredElement);
       }
 
 
@@ -175,37 +169,37 @@
               $('.' + MULTI_DROPDOWN_MENU_ITEM).filter('.active').each(function() {
                 $(this).removeClass('active');
                 if ($(this).data(CHILD_SUBMENU).hasClass(FIRST_SUB_MENU)) {
-                  upAndHideSubMenu($(this).data(CHILD_SUBMENU).children());
+                  upAndHideSubMenu($(this).data(CHILD_SUBMENU).children(), options.duration);
                 }
                 else {
-                  slideLeftSubMenu($(this).data(CHILD_SUBMENU).children());
+                  slideLeftSubMenu($(this).data(CHILD_SUBMENU).children(), options.duration);
               }
             })
     });
   }
 
-  var closeChildSubMenusOfMenuItem = function(menuItem) {
+  var closeChildSubMenusOfMenuItem = function(menuItem, options) {
     // Close submenu of all the 'active' li has level higher than or equal the current one
     $('.' + MULTI_DROPDOWN_MENU_ITEM).filter('.active').filter(function() {
       return $(this).data('level') >= menuItem.data('level') && !$(this).is(menuItem);
     })
     .each(function() {
       // Close the submenu of this <li> element and then remove class 'active' out of it
-      showOrCloseSubMenu($(this), false);
+      showOrCloseSubMenu($(this), false, options);
     });
   }
 
-  var showOrCloseSubMenu = function(menuItem, toShow) {
+  var showOrCloseSubMenu = function(menuItem, toShow, options) {
     
     toShow === true? menuItem.addClass('active') : menuItem.removeClass('active');
 
     var childSubMenu = menuItem.data(CHILD_SUBMENU);
     if (childSubMenu != null) {
       if (childSubMenu.hasClass(FIRST_SUB_MENU)) {
-        toShow === true ? dropdownSubMenu(childSubMenu.children()) : upAndHideSubMenu(childSubMenu.children());
+        toShow === true ? dropdownSubMenu(childSubMenu.children(), options.duration) : upAndHideSubMenu(childSubMenu.children(), options.duration);
       }
       else {
-        toShow === true ? slideRightSubMenu(childSubMenu.children()) : slideLeftSubMenu(childSubMenu.children());
+        toShow === true ? slideRightSubMenu(childSubMenu.children(), options.duration) : slideLeftSubMenu(childSubMenu.children(), options.duration);
       }
     }
     
@@ -260,7 +254,7 @@
     });
   }
 
-  var buildMultiLevelDropdownMenu = function(mainMenu) {
+  var buildMultiLevelDropdownMenu = function(mainMenu, options) {
     var isFirstSubmenu = true;
     mainMenu.children().filter('li').each(function() {
        $(this).data('level', 0);
@@ -269,7 +263,7 @@
 
     positionSubMenuWrapper();
     positionSubMenu();
-    setUpMovement(mainMenu);
+    setUpMovement(mainMenu, options);
   }
 
   function Plugin(element, options) {
@@ -284,7 +278,7 @@
 
       that.mainMenu = that.element;
 
-      buildMultiLevelDropdownMenu(that.mainMenu);
+      buildMultiLevelDropdownMenu(that.mainMenu, that.options);
       
     },
    
