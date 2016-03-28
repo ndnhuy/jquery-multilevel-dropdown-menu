@@ -41,14 +41,16 @@
 
   var slideLeftSubMenu = function(subMenu) {
     subMenu.removeClass('showing');
+    subMenu.css('display', 'none');
     subMenu.stop(true, false);
     subMenu.animate({
-      'margin-left': subMenu.outerWidth()*-1
+      'margin-left': subMenu.outerWidth()*-1,
     }, duration);
   }
 
   var slideRightSubMenu = function(subMenu) {
     subMenu.addClass('showing');
+    subMenu.css('display', 'block');
     subMenu.stop(true, false);
     subMenu.animate({
       'margin-left': 0
@@ -80,6 +82,7 @@
             slideLeftSubMenu($(this).data(CHILD_SUBMENU).children());
           }
         });
+        liElement.removeClass('active');
         upAndHideSubMenu(subMenu);
       });
     }
@@ -106,6 +109,12 @@
     mainMenu.delegate('.' + MULTI_DROPDOWN_MENU_ITEM, 'mouseenter', function() {
 
       var currentEnteredElement = $(this);
+
+      // Allow onely one main-submenu is active
+      if (currentEnteredElement.parent().is(mainMenu)) {
+        mainMenu.children().filter('.active').mouseleave();
+      }
+
       var prevEnteredElement = mainMenu.data('current-selected-item');
       if (prevEnteredElement == null) {
         mainMenu.data('current-selected-item', $(this));
@@ -166,16 +175,21 @@
       var isFirstSubmenu = true;
 
       //TODO refactor to apply this line of code in case there're many menus
-      that.mainMenu.children().eq(0).data('level', 0);
-      wrapSubMenuUpAndSplitThem(that.mainMenu, that.mainMenu.children().eq(0), isFirstSubmenu);
+      that.mainMenu.children().filter('li').each(function() {
+         $(this).data('level', 0);
+         wrapSubMenuUpAndSplitThem(that.mainMenu, $(this), isFirstSubmenu);
+      });
+
+      // that.mainMenu.children().eq(0).data('level', 0);
+      // wrapSubMenuUpAndSplitThem(that.mainMenu, that.mainMenu.children().eq(0), isFirstSubmenu);
 
       $('.child').each(function() {
         var liElement = $(this).data(PARENT_MENU);
         var subMenu = $(this).children();
-        // subMenu.css({
-        //     margin: 0,
-        //     padding: 0
-        // });
+        subMenu.css({
+            margin: 0,
+            padding: 0
+        });
 
         if ($(this).hasClass(FIRST_SUB_MENU)) {
           var top = parseInt(liElement.offset().top) + parseInt(liElement.css('height')) + 'px';
@@ -213,32 +227,27 @@
       $('.' + CHILD_SUBMENU + ':not(.' + FIRST_SUB_MENU + ')').children().each(function() {
         var width = $(this).outerWidth();
         $(this).css({
-          'margin-left': width*-1
+          'margin-left': width*-1,
+          display: 'none'
         });
       });
 
-      // $('#menu').on('mouseleave', function() {
 
-      //   $(this).data('isClosingAll', true);
+      that.mainMenu.on('mousemove', function(e) {
+        e.stopPropagation();
+      });
 
-      //   setTimeout(
-      //       function() {
-      //         if ($(this).data('isClosingAll') == false) return;
-
-      //         $('.' + MULTI_DROPDOWN_MENU_ITEM).filter('.active').each(function() {
-      //           if ($(this).data(CHILD_SUBMENU).hasClass(FIRST_SUB_MENU)) {
-      //             console.log("UP");
-      //             upAndHideSubMenu($(this).data(CHILD_SUBMENU).children());
-      //           }
-      //           else {
-      //             slideLeftSubMenu($(this).data(CHILD_SUBMENU).children());
-      //           }
-                
-      //         });
-      //       }, 2000);
-
-        
-      // });
+      $('html').on('mousemove', function(e) {
+                $('.' + MULTI_DROPDOWN_MENU_ITEM).filter('.active').each(function() {
+                  $(this).removeClass('active');
+                  if ($(this).data(CHILD_SUBMENU).hasClass(FIRST_SUB_MENU)) {
+                    upAndHideSubMenu($(this).data(CHILD_SUBMENU).children());
+                  }
+                  else {
+                    slideLeftSubMenu($(this).data(CHILD_SUBMENU).children());
+                }
+              })
+      });
 
 
     },

@@ -1,52 +1,109 @@
 <!DOCTYPE html>
 <html>
 <style>
-	#menu {
-		width: 50px;
+	body {
+		/*background: #E3CAA1;*/
 	}
-	
+	/*#menu {
+		width: 50px;
+	}*/
+	ul {
+	    list-style-type: none;
+	    margin: 0;
+	    padding: 0;
+	    overflow: hidden;
+	    background-color: #f3f3f3;
+	}
+
+	#menu > li {
+	    float: left;
+	}
+
+	li a {
+	    display: block;
+	    color: #666;
+	    text-align: center;
+	    padding: 14px 16px;
+	    text-decoration: none;
+	}
+
+	li a:hover {
+	    background-color: #4CAF50;
+	}
+
+	li:last-child {
+		border-right: none;
+	}
 </style>
 <body>
 
 	<ul id="menu">
-	  <li>Parent
+	  <li><a href="#">Parent</a>
 	  	<ul>
-	  		<li>Child 1
+	  		<li><a href="#">Child 1</a>
 	  			<ul>
-		  			<li>GrandChild 1
+		  			<li><a href="#">Gtrandchild1</a>
 		  				<ul>
-				  			<li>GrandChild 1111
+				  			<li><a href="#">Gtrandchild1</a>
 				  				<ul>
-						  			<li>GrandChild 11111</li>
-						  			<li>GrandChild 21111</li>
-						  			<li>GrandChild 31111</li>
+						  			<li><a href="#">Gtrandchild1</a>
+							  		</li>
+						  			<li><a href="#">Gtrandchild1</a></li>
+						  			<li><a href="#">Gtrandchild1</a></li>
 					  			</ul>
-				  			</li>
-				  			<li>GrandChild 2111</li>
-				  			<li>GrandChild 3111</li>
+					  		</li>
+				  			<li><a href="#">Gtrandchild1</a></li>
+				  			<li><a href="#">Gtrandchild1</a></li>
 			  			</ul>
 			  		</li>
-		  			<li>GrandChild 2</li>
-		  			<li>GrandChild 3</li>
+		  			<li><a href="#">Gtrandchild1</a></li>
+		  			<li><a href="#">Gtrandchild1</a></li>
 	  			</ul>
 	  			
 	  		</li>
-	  		<li>Child 2
+	  		<li><a href="#">Child 2</a>
 	  			<ul>
-		  			<li>GrandChild 11
+		  			<li><a href="#">Gtrandchild1</a></li>
+		  			<li><a href="#">Gtrandchild1</a></li>
+		  			<li><a href="#">Gtrandchild1</a>
 		  				<ul>
-				  			<li>GrandChild 111</li>
-				  			<li>GrandChild 211</li>
-				  			<li>GrandChild 311</li>
+				  			<li><a href="#">Gtrandchild1</a>
+				  				<ul>
+						  			<li><a href="#">Gtrandchild1</a>
+							  		</li>
+						  			<li><a href="#">Gtrandchild1</a></li>
+						  			<li><a href="#">Gtrandchild1</a></li>
+					  			</ul>
+					  		</li>
+				  			<li><a href="#">Gtrandchild1</a></li>
+				  			<li><a href="#">Gtrandchild1</a></li>
 			  			</ul>
 		  			</li>
-		  			<li>GrandChild 21</li>
-		  			<li>GrandChild 31</li>
 	  			</ul>
 	  		</li>
-	  		<li>Child 3</li>
+	  		<li><a href="#">Child 3</a></li>
 	  	</ul>
 	  </li>
+	  <li><a href="#">ABC</a>
+	  	<ul>
+  			<li><a href="#">Gtrandchild1</a>
+  				<!-- <ul>
+		  			<li>GrandChild 1111
+		  				<ul>
+				  			<li>GrandChild 11111</li>
+				  			<li>GrandChild 21111</li>
+				  			<li>GrandChild 31111</li>
+			  			</ul>
+		  			</li>
+		  			<li>GrandChild 2111</li>
+		  			<li>GrandChild 3111</li>
+	  			</ul> -->
+	  		</li>
+  			<li><a href="#">Gtrandchild1</a></li>
+  			<li><a href="#">Gtrandchild1</a></li>
+	  	</ul>
+	  </li>
+	  <li><a href="#">DEF</a></li>
 	</ul>
 
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>

@@ -1,4 +1,4 @@
-/*body {
+body {
   font-family: 'Lucida Grande', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   padding: 20px 50px 150px;
   font-size: 13px;
@@ -8,18 +8,12 @@
 
 ul {
   text-align: left;
-  display: inline;
   margin: 0;
-  padding: 15px 4px 17px 0;
   list-style: none;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
 }
 ul li {
   font: bold 12px/18px sans-serif;
-  display: inline-block;
   margin-right: -4px;
-  position: relative;
-  padding: 15px 20px;
   background: #fff;
   cursor: pointer;
 }
@@ -27,7 +21,7 @@ ul li:hover {
   background: #555;
   color: #fff;
 }
-ul li ul {
+/*ul li ul {
   padding: 0;
   position: absolute;
   top: 48px;
@@ -45,5 +39,4 @@ ul li ul li {
   display: block; 
   color: #fff;
   text-shadow: 0 -1px 0 #000;
-}
-*/
+}*/
