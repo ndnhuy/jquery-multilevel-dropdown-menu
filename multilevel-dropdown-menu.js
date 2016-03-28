@@ -3,9 +3,10 @@
  *  @description description
  *  @version 1.0
  *  @options
- *    option
+ *    duration
+ *    durationCloseWhenEnterOutside
  *  @events
- *    event
+ *
  *  @methods
  *    init
  *    publicMethod
@@ -28,7 +29,8 @@
     subMenu.css('display', 'block');
     subMenu.stop(true, false);
     subMenu.animate({
-      'margin-top': 0
+      'margin-top': 0,
+      'opacity': 1
     }, duration);
   }
   var upAndHideSubMenu = function(subMenu, duration) {
@@ -37,7 +39,8 @@
 
     subMenu.stop(true, false);
     subMenu.animate({
-      'margin-top': subMenu.outerHeight()*-1
+      'margin-top': subMenu.outerHeight()*-1,
+      'opacity': 0
     }, duration, function() {
       subMenu.css('display', 'none');
     });
@@ -49,6 +52,7 @@
     subMenu.stop(true, false);
     subMenu.animate({
       'margin-left': subMenu.outerWidth()*-1,
+      'opacity': 0
     }, duration, function() {
       subMenu.css('display', 'none');
     });
@@ -59,7 +63,8 @@
     subMenu.css('display', 'block');
     subMenu.stop(true, false);
     subMenu.animate({
-      'margin-left': 0
+      'margin-left': 0,
+      'opacity': 1
     }, duration);
   }
 
@@ -114,6 +119,12 @@
         prevEnteredElement = currentEnteredElement;
       }
 
+      // Close all active menu
+      $('.isClosingCausedByEnterOutside').each(function() {
+        $(this).removeClass('isClosingCausedByEnterOutside');
+        showOrCloseSubMenu($(this), false, options);
+      });
+
       if (!parentSubMenu.hasClass('showing') && currentEnteredElement.data('level') > 0) {
         //TODO refactor subMenuWrapper.data(PARENT_MENU). Need to differentiate the parentSubMenu and childSubMenu
         showOrCloseSubMenu(subMenuWrapper.data(PARENT_MENU), true, options);
@@ -135,7 +146,6 @@
            if (currentEnteredElement.data('level') === prevEnteredElement.data('level')
                   && !currentEnteredElement.parent().is(prevEnteredElement.parent())) {
             closeChildSubMenusOfMenuItem(currentEnteredElement.parent().parent().data(PARENT_MENU), options);
-           //showOrCloseSubMenu(prevEnteredElement.parent().parent().data(PARENT_MENU), false);
             
            }
            else {
@@ -154,12 +164,13 @@
           slideRightSubMenu(currentEnteredElement.data(CHILD_SUBMENU).children(), options.duration);
         }
 
-      }
-
-
-     
+      }  
     });
 
+    setUpBehaviorWhenEnteringOutside(mainMenu, options);
+  }
+
+  var setUpBehaviorWhenEnteringOutside = function(mainMenu, options) {
     // Hide all submenu when enterning outside
     mainMenu.on('mousemove', function(e) {
       e.stopPropagation();
@@ -168,11 +179,12 @@
     $('html').on('mousemove', function(e) {
               $('.' + MULTI_DROPDOWN_MENU_ITEM).filter('.active').each(function() {
                 $(this).removeClass('active');
+                $(this).addClass('isClosingCausedByEnterOutside');
                 if ($(this).data(CHILD_SUBMENU).hasClass(FIRST_SUB_MENU)) {
-                  upAndHideSubMenu($(this).data(CHILD_SUBMENU).children(), options.duration);
+                  upAndHideSubMenu($(this).data(CHILD_SUBMENU).children(), options.durationCloseWhenEnterOutside);
                 }
                 else {
-                  slideLeftSubMenu($(this).data(CHILD_SUBMENU).children(), options.duration);
+                  slideLeftSubMenu($(this).data(CHILD_SUBMENU).children(), options.durationCloseWhenEnterOutside);
               }
             })
     });
@@ -249,7 +261,8 @@
       var width = $(this).outerWidth();
       $(this).css({
         'margin-left': width*-1,
-        display: 'none'
+        display: 'none',
+        opacity: 0
       });
     });
   }
@@ -301,7 +314,9 @@
   };
 
   $.fn[pluginName].defaults = {
-    duration: 'fast'
+    duration: 'fast',
+    durationCloseWhenEnterOutside: 5000,
+    fadeOut: true
   };
 
   $(function() {
